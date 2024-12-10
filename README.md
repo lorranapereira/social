@@ -1,5 +1,5 @@
-Social
 Aplicativo React Native com funcionalidades de autenticação, criação, listagem e exclusão de posts.
+
 Descrição
 
 Este é um aplicativo desenvolvido com React Native e React Navigation, que utiliza uma API para autenticação e gerenciamento de posts. Ele inclui:
