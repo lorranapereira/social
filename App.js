@@ -1,39 +1,38 @@
-import React, { useState, createContext, useContext } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import SignIn from './src/screens/SignIn'; // Tela de Login
-import SignUp from './src/screens/SignUp'; // Tela de Cadastro
-import Home from './src/screens/Home'; // Tela Home (protegida)
-
-// Contexto para autenticação
-const AuthContext = createContext();
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { AuthProvider, useAuth } from "./src/context/AuthContext";
+import SignIn from "./src/screens/SignIn";
+import SignUp from "./src/screens/SignUp";
+import TabNavigator from "./src/components/TabNavigator";
 
 const Stack = createStackNavigator();
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  return (
+    <AuthProvider>
+      <NavigationContainer>
+        <RootNavigator />
+      </NavigationContainer>
+    </AuthProvider>
+  );
+};
+
+const RootNavigator = () => {
+  const { user } = useAuth();
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
-      <NavigationContainer>
-        <Stack.Navigator>
-          {!isAuthenticated ? (
-            // Usuário não autenticado: Exibe as telas de SignIn e SignUp
-            <>
-              <Stack.Screen name="SignIn" component={SignIn} options={{ title: 'Entrar' }} />
-              <Stack.Screen name="SignUp" component={SignUp} options={{ title: 'Registrar' }} />
-            </>
-          ) : (
-            // Usuário autenticado: Exibe a Home
-            <Stack.Screen name="Home" component={Home} options={{ title: 'Home' }} />
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
-    </AuthContext.Provider>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {user ? (
+        <Stack.Screen name="Tabs" component={TabNavigator} />
+      ) : (
+        <>
+          <Stack.Screen name="SignIn" component={SignIn} />
+          <Stack.Screen name="SignUp" component={SignUp} />
+        </>
+      )}
+    </Stack.Navigator>
   );
 };
 
 export default App;
-
-// Função para acessar o contexto
-export const useAuth = () => useContext(AuthContext);

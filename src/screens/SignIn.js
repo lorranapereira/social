@@ -8,6 +8,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Text } from "react-native-paper";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "../context/AuthContext"; // Certifique-se do caminho correto
 
 import EmailInput from "../components/EmailInput";
 import PasswordInput from "../components/PasswordInput";
@@ -18,9 +21,37 @@ const SignIn = ({ navigation }) => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const { setUser } = useAuth(); // Consome o contexto do AuthContext
+
+  const handleLogin = async () => {
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const response = await axios.post("https://simple-api-ngvw.onrender.com/login", {
+        email,
+        password,
+      });
+
+      if (response.status === 200 && response.data.jwt) {
+        const token = response.data.jwt;
+
+        await AsyncStorage.setItem("@jwt_token", token);
+
+        setUser({ email, token });
+      } else {
+        setError("Credenciais inválidas. Tente novamente.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao realizar login. Verifique suas credenciais.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-      <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container}>
         <View style={styles.innerContainer}>
           <Text style={styles.login}>Login</Text>
 
@@ -40,6 +71,7 @@ const SignIn = ({ navigation }) => {
             style={styles.loginButton}
             loading={isLoading}
             disabled={isLoading}
+            onPress={handleLogin}
           >
             Login
           </Button>
@@ -51,7 +83,7 @@ const SignIn = ({ navigation }) => {
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+    </SafeAreaView>
   );
 };
 
